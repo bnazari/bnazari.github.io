@@ -71,40 +71,47 @@
             }).appendTo(elm);
             img.attr('unselectable', 'on');
             img.css('user-select', 'none');
-	   img.on('selectstart', false);         
-        	elm.attr('data-current_frame',elm.data('initial'));   
-  
+	    img.on('selectstart', false);         
+            elm.attr('data-current_frame',elm.data('initial'));   
 
-			function preloadImages(){
-					  for(i=0; i<=frames; i++) {
-							imageArray[i]= elm.data('source')+'/'+elm.data('source')+'.'+ i.toString() + '.jpg'
+
+			function preloadImages(callback) {
+				var img;
+				var remaining = frames;
+				for (var i = 0; i < frames; i++) {
+					img = new Image();
+					img.onload = function() {
+						--remaining;
+						if (remaining <= 0) {
+							callback();
 						}
+					};
+					img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
+					imageArray.push(img);
+				}
 			}
 
-		
-          			async function waiter_function() {
-				console.log('preloading image!');
-
-				await preloadImages();
+            preloadImages(imagesLoaded);
+            
+            function imagesLoaded(){
 				display_frame(elm.data('initial'));
 				elm.find('#img-load').hide();
 				img.show();
 				console.log('done preloading image!');
-			}
-
-			waiter_function();  
-		setTimeout(function() { wiggle(); }, 1000); 							//Enable initial wiggle
-
-            function display_frame(frame_no){
-            	if(frame_no<0){
-					img.attr("src",imageArray[0]);
-				}else if(frame_no>frames){
-					img.attr("src",imageArray[frames]);
-				}else{
-					img.attr("src",imageArray[frame_no]);
-				}
+				setTimeout(function(){wiggle();}, 1000); //Enable initial wiggle
             }
             
+            
+            function display_frame(frame_no) {
+              if (frame_no < 0) {
+                img.attr("src", imageArray[0].src);
+              } else if (frame_no > frames) {
+                img.attr("src", imageArray[frames].src);
+              } else {
+                img.attr("src", imageArray[frame_no].src);
+              }
+            }
+		
 			function wiggle(e){
 				num_frames = 100;													//Number of frames to wiggle
 				timing=20;															//Time between frames in ms.
