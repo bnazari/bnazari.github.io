@@ -73,7 +73,15 @@
             img.css('user-select', 'none');
 	   img.on('selectstart', false);         
         	elm.attr('data-current_frame',elm.data('initial'));   
-        	
+  
+
+			function preloadImages(){
+					  for(i=0; i<=frames; i++) {
+							imageArray[i]= elm.data('source')+'/'+elm.data('source')+'.'+ i.toString() + '.jpg'
+						}
+			}
+
+		
           			async function waiter_function() {
 				console.log('preloading image!');
 
