@@ -1,81 +1,83 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title></title>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta name="robots" content="noindex, nofollow">
-<meta name="googlebot" content="noindex, nofollow">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
-<style id="compiled-css" type="text/css">
-	body {
-		text-align: center;
-		padding-top: 20px;
-	}
-	body > div {
-		display: inline-block;
-	}
-	.art-preview {
-		display: inline-block;
-		position: relative;
-		background: #ddd;
-		overflow: hidden;
-		width: 0px;
-		height: 0px;
-		border-radius: 3px;
-		box-shadow: 0 0 6px #bbb;
-	}
-	
-	#img-load {
-		margin: 0;
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		-ms-transform: translate(-50%, -50%);
-		transform: translate(-50%, -50%);
-	}
-	#img-load > img {
-		height:100px;
-		width:100px;
-	}
-</style>
-</head>
-<body>
-	<div class="art-preview" data-initial="100" data-source="kobe" data-current_frame=0></div>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
+    <style id="compiled-css" type="text/css">
+      body {
+        text-align: center;
+        padding-top: 20px;
+      }
+
+      body>div {
+        display: inline-block;
+      }
+
+      .art-preview {
+        display: inline-block;
+        position: relative;
+        background: #ddd;
+        overflow: hidden;
+        width: 0px;
+        height: 0px;
+        border-radius: 3px;
+        box-shadow: 0 0 6px #bbb;
+      }
+
+      #img-load {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+
+/* 
+      #img-load>img {
+        height: 100px;
+        width: 100px;
+      }
+ */
+    </style>
+  </head>
+  <body>
+    <div class="art-preview" data-initial="100" data-source="kobe" data-current_frame=0></div>
 <!-- 
 	<div class="art-preview" data-initial="100" data-source="tennis" data-current_frame=0></div>
 	<div class="art-preview" data-initial="100" data-source="pop" data-current_frame=0></div>
 	<div class="art-preview" data-initial="100" data-source="einstein" data-current_frame=0></div>
 	<div class="art-preview" data-initial=100 data-source="marylin" data-current_frame=0></div>
  -->
-<script type="text/javascript">
-(function($) {
-    $.fn.artPreview = function(options) {
-        return this.each(function() {
+    <script type="text/javascript">
+      (function($) {
+        $.fn.artPreview = function(options) {
+          return this.each(function() {
             var elm = $(this);
-            var width =  Math.min(.7*window.innerWidth, .7*window.innerHeight );	//Change size here
-			var frames = 201;
-			var abort_wiggle=false;
-            elm.data('used',false);
-			var i = 0;
-			var imageArray = new Array();
-			elm.css('width',  width);
-            elm.css('height',  width);
-			elm.append('<div id="img-load"><img src="loading.gif" /></div>');
-            var img = $('<img/>', { 'src': ''}).hide().css({
-                'cursor': 'pointer',
-                'pointer-events':'none',
-                'height': width,
-
-            }).appendTo(elm);
+            var width = Math.min(.7 * window.innerWidth, .7 * window.innerHeight); //Change size here
+            var frames = 200;
+            var abort_wiggle = false;
+            elm.data('used', false);
+            var i = 0;
+            var imageArray =[];
+            elm.css('width', width);
+            elm.css('height', width);
+            elm.append('<div id="img-load"> <img src="loading2.gif"></div>');
+            $('#img-load').find('img').css('height', width/4);
+            $('#img-load').find('img').css('width', width/4);
+		    var img = $(' <img />', { 'src': ''}).hide().css({'cursor': 'pointer', 'pointer-events': 'none', 'height': width,}).appendTo(elm);
             img.attr('unselectable', 'on');
             img.css('user-select', 'none');
-	    img.on('selectstart', false);         
-            elm.attr('data-current_frame',elm.data('initial'));   
-
+            img.on('selectstart', false);
+            elm.attr('data-current_frame', elm.data('initial'));
 
 			function preloadImages(callback) {
+				console.log('Starting preloading.');
 				var img;
 				var remaining = frames;
 				for (var i = 0; i < frames; i++) {
@@ -97,7 +99,7 @@
 				display_frame(elm.data('initial'));
 				elm.find('#img-load').hide();
 				img.show();
-				console.log('done preloading image!');
+				console.log('Preloading complete.');
 				setTimeout(function(){wiggle();}, 1000); //Enable initial wiggle
             }
             
@@ -111,107 +113,104 @@
                 img.attr("src", imageArray[frame_no].src);
               }
             }
-		
-			function wiggle(e){
-				num_frames = 100;													//Number of frames to wiggle
-				timing=20;															//Time between frames in ms.
-				pause_timer=50;														//Pauses at the end
-				wiggle_frame=0;
-				current_frame=elm.attr('data-current_frame');
-				var wiggler = setTimeout(wiggle_change_frame, timing);
-					function wiggle_change_frame() {
-						if(abort_wiggle==false){
-								if (wiggle_frame<=num_frames) {
-									current_frame = (elm.data('initial')-wiggle_frame);
-									elm.attr('data-current_frame',current_frame);
-									display_frame(current_frame);
-								}else if(wiggle_frame<num_frames*3+pause_timer && wiggle_frame>num_frames+pause_timer){
-									current_frame=(elm.data('initial')-2*num_frames+wiggle_frame-pause_timer);
-									elm.attr('data-current_frame',current_frame);
-									display_frame(current_frame);
-								}else if(wiggle_frame>num_frames*3+2*pause_timer){
-									current_frame= (elm.data('initial')+4*num_frames-wiggle_frame+2*pause_timer);
-									elm.attr('data-current_frame',current_frame);
-									display_frame(current_frame);
-								}
-							}
-							wiggle_frame=wiggle_frame+1;
-							if(wiggle_frame<=num_frames*4+2*pause_timer){
-								wiggler = setTimeout(wiggle_change_frame, timing);
-								}
-					}
-					
-			}            
 
-            function reset_initial(e){
-				current_frame=elm.attr('data-current_frame');
-				final_frame=elm.data('initial');
-				timer_interval=2; 													//Reset timer
-				var reset = setTimeout(change_frame, timer_interval);
-				function change_frame() {
-					current_frame = elm.attr('data-current_frame');
-					if ((current_frame != final_frame) && elm.data('used')==false) {
-						display_frame(current_frame);
-						if (final_frame > current_frame){
-							current_frame++;
-							} else {
-							current_frame--;
-							}
-						reset = setTimeout(change_frame, timer_interval); 
-					}
-					elm.attr('data-current_frame', current_frame);
+            function wiggle(e) {
+              num_frames = 100; //Number of frames to wiggle
+              timing = 20; //Time between frames in ms.
+              pause_timer = 50; //Pauses at the end
+              wiggle_frame = 0;
+              current_frame = elm.attr('data-current_frame');
+              var wiggler = setTimeout(wiggle_change_frame, timing);
 
-				}
-			}
-			
-			elm.on("touchend", function(e){
-            	elm.data('used',false);
-            	setTimeout(function(e) { reset_initial(e); }, 1500);
+              function wiggle_change_frame() {
+                if (abort_wiggle == false) {
+                  if (wiggle_frame <= num_frames) {
+                    current_frame = (elm.data('initial') - wiggle_frame);
+                    elm.attr('data-current_frame', current_frame);
+                    display_frame(current_frame);
+                  } else if (wiggle_frame < num_frames * 3 + pause_timer && wiggle_frame > num_frames + pause_timer) {
+                    current_frame = (elm.data('initial') - 2 * num_frames + wiggle_frame - pause_timer);
+                    elm.attr('data-current_frame', current_frame);
+                    display_frame(current_frame);
+                  } else if (wiggle_frame > num_frames * 3 + 2 * pause_timer) {
+                    current_frame = (elm.data('initial') + 4 * num_frames - wiggle_frame + 2 * pause_timer);
+                    elm.attr('data-current_frame', current_frame);
+                    display_frame(current_frame);
+                  }
+                }
+                wiggle_frame = wiggle_frame + 1;
+                if (wiggle_frame <= num_frames * 4 + 2 * pause_timer) {
+                  wiggler = setTimeout(wiggle_change_frame, timing);
+                }
+              }
+            }
+
+            function reset_initial(e) {
+              current_frame = elm.attr('data-current_frame');
+              final_frame = elm.data('initial');
+              timer_interval = 2; //Reset timer
+              var reset = setTimeout(change_frame, timer_interval);
+
+              function change_frame() {
+                current_frame = elm.attr('data-current_frame');
+                if ((current_frame != final_frame) && elm.data('used') == false) {
+                  display_frame(current_frame);
+                  if (final_frame > current_frame) {
+                    current_frame++;
+                  } else {
+                    current_frame--;
+                  }
+                  reset = setTimeout(change_frame, timer_interval);
+                }
+                elm.attr('data-current_frame', current_frame);
+              }
+            }
+            elm.on("touchend", function(e) {
+              elm.data('used', false);
+              setTimeout(function(e) {
+                reset_initial(e);
+              }, 1500);
             })
-			elm.on("touchcancel", function(e){
-            	elm.data('used',false);
-            	setTimeout(function(e) { reset_initial(e); }, 1500);
+            elm.on("touchcancel", function(e) {
+              elm.data('used', false);
+              setTimeout(function(e) {
+                reset_initial(e);
+              }, 1500);
             })
-            
-            elm.on("touchstart", function(e){
-				abort_wiggle=true;
-            	elm.data('used',true);
-            })            
-            
-            elm.mouseleave(function(e){
-            	elm.data('used',false);
-            	setTimeout(function(e) { reset_initial(); }, 1500);
+            elm.on("touchstart", function(e) {
+              abort_wiggle = true;
+              elm.data('used', true);
             })
-            
-            elm.mouseenter(function(e){
-				abort_wiggle=true;
-            	elm.data('used',true);
-            })            
-            
-            elm.on("touchmove", function(e){
-				e.preventDefault();
-            	var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-                var location = touch.clientX - elm.position().left;
-                location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
-                image_num=frames-1-Math.round(location/elm.width()*(frames-1));
-				elm.attr('data-current_frame', image_num);
-                display_frame(image_num);
+            elm.mouseleave(function(e) {
+              elm.data('used', false);
+              setTimeout(function(e) {
+                reset_initial();
+              }, 1500);
             })
-
-            elm.mousemove(function(e){
-                var location = e.clientX - elm.position().left;
-                location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
-                image_num=frames-1-Math.round(location/elm.width()*(frames-1));
-                elm.attr('data-current_frame', image_num);
-                display_frame(image_num);
-            });             
-        });
-    };
-})(jQuery);
-
-$('.art-preview').artPreview();
-
-
-</script>
-</body>
+            elm.mouseenter(function(e) {
+              abort_wiggle = true;
+              elm.data('used', true);
+            })
+            elm.on("touchmove", function(e) {
+              e.preventDefault();
+              var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+              var location = touch.clientX - elm.position().left;
+              location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
+              image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
+              elm.attr('data-current_frame', image_num);
+              display_frame(image_num);
+            })
+            elm.mousemove(function(e) {
+              var location = e.clientX - elm.position().left;
+              location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
+              image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
+              elm.attr('data-current_frame', image_num);
+              display_frame(image_num);
+            });
+          });
+        };
+      })(jQuery);
+      $('.art-preview').artPreview();
+    </script>
+  </body>
 </html>
