@@ -27,6 +27,10 @@
         height: 0px;
         border-radius: 3px;
         box-shadow: 0 0 6px #bbb;
+        	  margin-top: 10px;
+	  margin-left: auto;
+	  margin-right: auto;
+
       }
 
       #img-load {
@@ -36,24 +40,71 @@
         left: 50%;
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
-      }
 
-/* 
-      #img-load>img {
-        height: 100px;
-        width: 100px;
       }
- */
+/* TAB CONTENT CSS BELOW HERE */
+	/* Style the tab */
+	.tab {
+	  overflow: hidden;
+	  border: 1px solid #ccc;
+	  background-color: #f1f1f1;
+	}
+
+	/* Style the buttons that are used to open the tab content */
+	.tab button {
+	  background-color: inherit;
+	  float: left;
+	  border: none;
+	  outline: none;
+	  cursor: pointer;
+	  padding: 14px 16px;
+	  transition: 0.3s;
+	}
+
+	/* Change background color of buttons on hover */
+	.tab button:hover {
+	  background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	.tab button.active {
+	  background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+	  display: none;
+
+
+	}
+	.tabcontent {
+	  animation: fadeEffect 1s; /* Fading effect takes 1 second */
+	}
+
+	/* Go from zero to full opacity */
+	@keyframes fadeEffect {
+	  from {opacity: 0;}
+	  to {opacity: 1;}
+	}
     </style>
   </head>
   <body>
-    <div class="art-preview" data-initial="100" data-source="kobe" data-current_frame=0></div>
-<!-- 
-	<div class="art-preview" data-initial="100" data-source="tennis" data-current_frame=0></div>
-	<div class="art-preview" data-initial="100" data-source="pop" data-current_frame=0></div>
-	<div class="art-preview" data-initial="100" data-source="einstein" data-current_frame=0></div>
-	<div class="art-preview" data-initial=100 data-source="marylin" data-current_frame=0></div>
- -->
+<div class="tab">
+  <button class="tablinks" onclick="openArt(event, 'Kobe')" id="defaultOpen">Kobe</button>
+  <button class="tablinks" onclick="openArt(event, 'Tennis')">Tennis</button>
+  <button class="tablinks" onclick="openArt(event, 'Pop')">Pop</button>
+  <button class="tablinks" onclick="openArt(event, 'Einstein')">Einstein</button>
+  <button class="tablinks" onclick="openArt(event, 'Marylin')">Marylin</button>
+</div>
+
+
+
+    <div id="Kobe" class="art-preview tabcontent" data-initial="100" data-source="kobe" data-current_frame=0></div>
+	<div id="Tennis" class="art-preview tabcontent" data-initial="100" data-source="tennis" data-current_frame=0></div>
+	<div id="Pop" class="art-preview tabcontent" data-initial="100" data-source="pop" data-current_frame=0></div>
+	<div id="Einstein" class="art-preview tabcontent" data-initial="100" data-source="einstein" data-current_frame=0></div>
+	<div id="Marylin" class="art-preview tabcontent" data-initial=100 data-source="marylin" data-current_frame=0></div>
+
     <script type="text/javascript">
       (function($) {
         $.fn.artPreview = function(options) {
@@ -97,10 +148,12 @@
             
             function imagesLoaded(){
 				display_frame(elm.data('initial'));
-				elm.find('#img-load').hide();
-				img.show();
+				elm.find('#img-load').stop(true).fadeOut(500, function() {
+					$(this).remove();
+				});
+				img.fadeIn(500);
 				console.log('Preloading complete.');
-				setTimeout(function(){wiggle();}, 1000); //Enable initial wiggle
+				setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle
             }
             
             
@@ -194,14 +247,14 @@
             elm.on("touchmove", function(e) {
               e.preventDefault();
               var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-              var location = touch.clientX - elm.position().left;
+              var location = touch.clientX - elm.offset().left;
               location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
               image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
               elm.attr('data-current_frame', image_num);
               display_frame(image_num);
             })
             elm.mousemove(function(e) {
-              var location = e.clientX - elm.position().left;
+              var location = e.clientX - elm.offset().left;
               location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
               image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
               elm.attr('data-current_frame', image_num);
@@ -210,7 +263,31 @@
           });
         };
       })(jQuery);
-      $('.art-preview').artPreview();
+//       $('.art-preview').artPreview();  //Uncomment to go into standard mode if not using tabs
+      
+//       TAB CONTENT JAVASCRIPT BELOW HERE
+	function openArt(evt, ArtName) {
+	  // Declare all variables
+	  var i, tabcontent, tablinks;
+
+	  // Get all elements with class="tabcontent" and hide them
+	  tabcontent = document.getElementsByClassName("tabcontent");
+	  for (i = 0; i < tabcontent.length; i++) {
+		tabcontent[i].style.display = "none";
+	  }
+
+	  // Get all elements with class="tablinks" and remove the class "active"
+	  tablinks = document.getElementsByClassName("tablinks");
+	  for (i = 0; i < tablinks.length; i++) {
+		tablinks[i].className = tablinks[i].className.replace(" active", "");
+	  }
+
+	  // Show the current tab, and add an "active" class to the button that opened the tab
+	  document.getElementById(ArtName).style.display = "block";
+	  evt.currentTarget.className += " active";
+	  $('#'+ArtName).artPreview();
+	  }
+      document.getElementById("defaultOpen").click();
     </script>
   </body>
 </html>
