@@ -71,23 +71,21 @@
             }).appendTo(elm);
             img.attr('unselectable', 'on');
             img.css('user-select', 'none');
-        	img.on('selectstart', false);         
+	   img.on('selectstart', false);         
         	elm.attr('data-current_frame',elm.data('initial'));   
         	
-            for(i=0; i<=frames; i++) {
-				imageArray[i]= elm.data('source')+'/'+elm.data('source')+'.'+ i.toString() + '.jpg'
-			}
-			display_frame(elm.data('initial'));
+          			async function waiter_function() {
+				console.log('preloading image!');
 
-            img.load(function() {
+				await preloadImages();
+				display_frame(elm.data('initial'));
 				elm.find('#img-load').hide();
-                $(this).show();
-//                 width = this.width;
-//                 elm.css('width', width);
-//                 elm.css('height', width);
-            });
-            
-			setTimeout(function() { wiggle(); }, 1000); 							//Enable initial wiggle
+				img.show();
+				console.log('done preloading image!');
+			}
+
+			waiter_function();  
+		setTimeout(function() { wiggle(); }, 1000); 							//Enable initial wiggle
 
             function display_frame(frame_no){
             	if(frame_no<0){
