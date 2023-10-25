@@ -161,6 +161,11 @@
 			for (var i = 0; i <= frames; i++) {
 				img = new Image();
 				img.onload = function() {
+					$(".animated-progress span").each(function () {
+					  if((100*(remaining/frames))%2==0){
+						  $(this).animate({width: Math.round(100*((frames-remaining)/frames)) + "%",},1);
+						}
+					});
 					--remaining;
 					if (remaining < 0) {
 						imageArray[elm.attr('id')]=innerImageArray;
@@ -168,13 +173,6 @@
 						callback();
 					}
 				};
-
-				$(".animated-progress span").each(function () {
-				  if((100*(i/frames))%2==0){
-					  console.log(Math.round(100*(i/frames)));
-					  $(this).animate({width: Math.round(100*(i/frames)) + "%",},1);
-					}
-				});
 				img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
 				innerImageArray.push(img);
 			}
