@@ -143,10 +143,10 @@
 				var img;
 				var remaining = frames;
 				for (var i = 0; i <= frames; i++) {
-					$( ".progressbar" ).progressbar({value: Math.round(100*(i/frames)) });
 					img = new Image();
 					img.onload = function() {
 						--remaining;
+						$( ".progressbar" ).progressbar({value: Math.round(100*(i/frames)) });
 						if (remaining <= 0) {
 							imageArray[elm.attr('id')]=innerImageArray;
 							callback();
