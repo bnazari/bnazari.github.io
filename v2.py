@@ -1,10 +1,15 @@
 import cv2
 import os
 import numpy as np
-
 import sys
+import shutil
+
+jpeg_quality = 75
 filename = sys.argv[1]
 image_filename=os.path.splitext(filename)[0]
+if os.path.exists(image_filename) and os.path.isdir(image_filename):
+    shutil.rmtree(image_filename)
+
 os.mkdir(image_filename) 
 cam = cv2.VideoCapture(filename)
 length = int(cam.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -19,7 +24,7 @@ while(True):
 	ret,frame = cam.read()
 	if ret: 
 		if original_frameno==int(next_save_frameno):
-			cv2.imwrite("%s/%s.%d.jpg" % (image_filename,image_filename,current_frameno), frame)
+			cv2.imwrite("%s/%s.%d.jpg" % (image_filename,image_filename,current_frameno), frame, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality])
 			next_save_frameno = next_save_frameno + frames_skip
 			current_frameno=current_frameno+1
 		original_frameno += 1

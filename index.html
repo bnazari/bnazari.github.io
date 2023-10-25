@@ -8,6 +8,8 @@
     <meta name="googlebot" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <style id="compiled-css" type="text/css">
       body {
         text-align: center;
@@ -33,14 +35,17 @@
 
       }
 
-      #img-load {
+      .img-load {
         margin: 0;
         position: absolute;
         top: 50%;
         left: 50%;
         -ms-transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
-
+      }
+      
+      .progressbar{
+      margin-top:5px;
       }
 /* TAB CONTENT CSS BELOW HERE */
 	/* Style the tab */
@@ -113,7 +118,7 @@
           	var innerImageArray =[];
             var elm = $(this);
             elm.children("img").remove();
-            var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight); //Change size here
+            var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight-60); //Change size here
             var frames = 200;
             var abort_wiggle = false;
             elm.data('used', false);
@@ -123,9 +128,9 @@
 
             elm.css('width', width);
             elm.css('height', width);
-            elm.append('<div id="img-load"> <img src="loading2.gif"></div>');
-            $('#img-load').find('img').css('height', width/4);
-            $('#img-load').find('img').css('width', width/4);
+            elm.append('<div class="img-load"> <img src="loading2.gif"><div class="progressbar"></div></div>');
+            $('.img-load').find('img').css('height', width/4);
+            $('.img-load').find('img').css('width', width/4);
             
 		    var img = $(' <img />', { 'src': ''}).hide().css({'cursor': 'pointer', 'pointer-events': 'none', 'height': width,}).appendTo(elm);
             img.attr('unselectable', 'on');
@@ -137,7 +142,8 @@
 				console.log('Starting preloading.');
 				var img;
 				var remaining = frames;
-				for (var i = 0; i < frames; i++) {
+				for (var i = 0; i <= frames; i++) {
+					$( ".progressbar" ).progressbar({value: Math.round(100*(i/frames)) });
 					img = new Image();
 					img.onload = function() {
 						--remaining;
@@ -155,11 +161,11 @@
 				if (imageArray[elm.attr('id')]){
 					console.log('Preloading complete.');
 					display_frame(elm.data('initial'));
-					elm.find('#img-load').stop(true).fadeOut(500, function() {
+					elm.find('.img-load').stop(true).fadeOut(500, function() {
 						$(this).remove();
 					});
 					img.fadeIn(500);
-					setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle				
+					setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle			
 				}else{
 					preloadImages(imagesLoader);
 				}
@@ -168,12 +174,11 @@
             imagesLoader();
             
             function display_frame(frame_no) {
-              if (frame_no < 0) {
+              if (frame_no <= 0) {
                 img.attr("src", imageArray[elm.attr('id')][0].src);
-              } else if (frame_no > frames) {
+              } else if (frame_no >= frames) {
                 img.attr("src", imageArray[elm.attr('id')][frames].src);
               } else {
-                console.log(frame_no);
                 img.attr("src", imageArray[elm.attr('id')][frame_no].src);
               }
             }
@@ -181,8 +186,8 @@
             function wiggle(e) {
               console.log("Wiggle time.")
               num_frames = 100; //Number of frames to wiggle
-              timing = 20; //Time between frames in ms.
-              pause_timer = 50; //Pauses at the end
+              timing = 30; //Time between frames in ms.
+              pause_timer = 40; //Pauses at the end
               wiggle_frame = 0;
               current_frame = elm.attr('data-current_frame');
               var wiggler = setTimeout(wiggle_change_frame, timing);
@@ -214,22 +219,25 @@
             function reset_initial(e) {
               current_frame = elm.attr('data-current_frame');
               final_frame = elm.data('initial');
-              timer_interval = 2; //Reset timer
+              timer_total = 500; //Reset timer
+              timer_interval = Math.round(timer_total/Math.abs(final_frame-current_frame));
               var reset = setTimeout(change_frame, timer_interval);
               function change_frame() {              
                 current_frame = parseInt(elm.attr('data-current_frame'));
+                display_frame(current_frame);
                 if ((current_frame != final_frame) && elm.data('used') == false) {
                   if (final_frame > current_frame) {                     
                     current_frame++;
                   } else {
                     current_frame--;
                   }
-                  display_frame(current_frame);
+                  
                   reset = setTimeout(change_frame, timer_interval);
                 }
                 elm.attr('data-current_frame', current_frame);
               }
             }
+            
             elm.on("touchend", function(e) {
               elm.data('used', false);
               setTimeout(function(e) {
@@ -269,9 +277,6 @@
 				  } else if (image_num > frames) {
 					image_num=frames;
 				  }
-//               var location = touch.clientX - elm.offset().left;
-//               location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
-//               image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
               elm.attr('data-current_frame', image_num);
               display_frame(image_num);
             })
