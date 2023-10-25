@@ -118,6 +118,7 @@
           	var innerImageArray =[];
             var elm = $(this);
             elm.children("img").remove();
+            elm.children("div").remove();
             var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight-60); //Change size here
             var frames = 200;
             var abort_wiggle = false;
@@ -146,12 +147,14 @@
 					img = new Image();
 					img.onload = function() {
 						--remaining;
-						$( ".progressbar" ).progressbar({value: Math.round(100*(i/frames)) });
 						if (remaining <= 0) {
 							imageArray[elm.attr('id')]=innerImageArray;
 							callback();
 						}
 					};
+						console.log( Math.round(100*(i/frames)));
+						$('#'+elm.attr('id')+' .progressbar' ).progressbar({value: Math.round(100*(i/frames)) });
+
 					img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
 					innerImageArray.push(img);
 				}
