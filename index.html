@@ -99,7 +99,7 @@
 
 
 
-    <div id="Kobe" class="art-preview tabcontent" data-initial="100" data-source="kobe" data-current_frame=0></div>
+    <div id="Kobe" class="art-preview tabcontent" data-initial="100" data-source="kobe" data-current_frame=0><span id="test"></div>
 	<div id="Tennis" class="art-preview tabcontent" data-initial="100" data-source="tennis" data-current_frame=0></div>
 	<div id="Pop" class="art-preview tabcontent" data-initial="100" data-source="pop" data-current_frame=0></div>
 	<div id="Einstein" class="art-preview tabcontent" data-initial="100" data-source="einstein" data-current_frame=0></div>
@@ -107,20 +107,26 @@
 
     <script type="text/javascript">
       (function($) {
+        var imageArray ={};
         $.fn.artPreview = function(options) {
           return this.each(function() {
+          	var innerImageArray =[];
             var elm = $(this);
+            elm.children("img").remove();
             var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight); //Change size here
             var frames = 200;
             var abort_wiggle = false;
             elm.data('used', false);
             var i = 0;
-            var imageArray =[];
+            var touchStartX=0;
+            var touchStartFrame=0;
+
             elm.css('width', width);
             elm.css('height', width);
             elm.append('<div id="img-load"> <img src="loading2.gif"></div>');
             $('#img-load').find('img').css('height', width/4);
             $('#img-load').find('img').css('width', width/4);
+            
 		    var img = $(' <img />', { 'src': ''}).hide().css({'cursor': 'pointer', 'pointer-events': 'none', 'height': width,}).appendTo(elm);
             img.attr('unselectable', 'on');
             img.css('user-select', 'none');
@@ -136,45 +142,50 @@
 					img.onload = function() {
 						--remaining;
 						if (remaining <= 0) {
+							imageArray[elm.attr('id')]=innerImageArray;
 							callback();
 						}
 					};
 					img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
-					imageArray.push(img);
+					innerImageArray.push(img);
 				}
 			}
+            
+            function imagesLoader(){
+				if (imageArray[elm.attr('id')]){
+					console.log('Preloading complete.');
+					display_frame(elm.data('initial'));
+					elm.find('#img-load').stop(true).fadeOut(500, function() {
+						$(this).remove();
+					});
+					img.fadeIn(500);
+					setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle				
+				}else{
+					preloadImages(imagesLoader);
+				}
 
-            preloadImages(imagesLoaded);
-            
-            function imagesLoaded(){
-				display_frame(elm.data('initial'));
-				elm.find('#img-load').stop(true).fadeOut(500, function() {
-					$(this).remove();
-				});
-				img.fadeIn(500);
-				console.log('Preloading complete.');
-				setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle
             }
-            
+            imagesLoader();
             
             function display_frame(frame_no) {
               if (frame_no < 0) {
-                img.attr("src", imageArray[0].src);
+                img.attr("src", imageArray[elm.attr('id')][0].src);
               } else if (frame_no > frames) {
-                img.attr("src", imageArray[frames].src);
+                img.attr("src", imageArray[elm.attr('id')][frames].src);
               } else {
-                img.attr("src", imageArray[frame_no].src);
+                console.log(frame_no);
+                img.attr("src", imageArray[elm.attr('id')][frame_no].src);
               }
             }
 
             function wiggle(e) {
+              console.log("Wiggle time.")
               num_frames = 100; //Number of frames to wiggle
               timing = 20; //Time between frames in ms.
               pause_timer = 50; //Pauses at the end
               wiggle_frame = 0;
               current_frame = elm.attr('data-current_frame');
               var wiggler = setTimeout(wiggle_change_frame, timing);
-
               function wiggle_change_frame() {
                 if (abort_wiggle == false) {
                   if (wiggle_frame <= num_frames) {
@@ -192,8 +203,10 @@
                   }
                 }
                 wiggle_frame = wiggle_frame + 1;
-                if (wiggle_frame <= num_frames * 4 + 2 * pause_timer) {
+                if (wiggle_frame <= num_frames * 4 + 2 * pause_timer && abort_wiggle == false) {
                   wiggler = setTimeout(wiggle_change_frame, timing);
+                }else{
+                wiggle_frame=0;
                 }
               }
             }
@@ -203,16 +216,15 @@
               final_frame = elm.data('initial');
               timer_interval = 2; //Reset timer
               var reset = setTimeout(change_frame, timer_interval);
-
-              function change_frame() {
-                current_frame = elm.attr('data-current_frame');
+              function change_frame() {              
+                current_frame = parseInt(elm.attr('data-current_frame'));
                 if ((current_frame != final_frame) && elm.data('used') == false) {
-                  display_frame(current_frame);
-                  if (final_frame > current_frame) {
+                  if (final_frame > current_frame) {                     
                     current_frame++;
                   } else {
                     current_frame--;
                   }
+                  display_frame(current_frame);
                   reset = setTimeout(change_frame, timer_interval);
                 }
                 elm.attr('data-current_frame', current_frame);
@@ -233,6 +245,9 @@
             elm.on("touchstart", function(e) {
               abort_wiggle = true;
               elm.data('used', true);
+              var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+	          touchStartX = touch.pageX;
+	          touchStartFrame = parseInt(elm.attr('data-current_frame'));
             })
             elm.mouseleave(function(e) {
               elm.data('used', false);
@@ -247,12 +262,20 @@
             elm.on("touchmove", function(e) {
               e.preventDefault();
               var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-              var location = touch.clientX - elm.offset().left;
-              location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
-              image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
+              var location = touch.clientX-touchStartX;
+			  image_num=touchStartFrame-location;
+			  if (image_num < 0) {
+					image_num=0;
+				  } else if (image_num > frames) {
+					image_num=frames;
+				  }
+//               var location = touch.clientX - elm.offset().left;
+//               location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
+//               image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
               elm.attr('data-current_frame', image_num);
               display_frame(image_num);
             })
+            
             elm.mousemove(function(e) {
               var location = e.clientX - elm.offset().left;
               location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
