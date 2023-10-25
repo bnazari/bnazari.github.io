@@ -8,8 +8,6 @@
     <meta name="googlebot" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.js"></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <style id="compiled-css" type="text/css">
       body {
         text-align: center;
@@ -44,9 +42,30 @@
         transform: translate(-50%, -50%);
       }
       
-      .progressbar{
-      margin-top:5px;
-      }
+	.animated-progress {
+	  width: 100px;
+	  height: 10px;
+	  border-radius: 5px;
+	  margin: 20px 10px;
+	  border: 1px solid rgb(113, 113, 113);
+	  overflow: hidden;
+	  position: relative;
+	}
+
+	.animated-progress span {
+	  height: 100%;
+	  display: block;
+	  width: 0;
+	  color: rgb(251, 251, 251);
+	  line-height: 10px;
+	  position: absolute;
+	  text-align: end;
+	  padding-right: 5px;
+	  background-color: grey;
+	}
+
+      
+      
 /* TAB CONTENT CSS BELOW HERE */
 	/* Style the tab */
 	.tab {
@@ -101,224 +120,230 @@
   <button class="tablinks" onclick="openArt(event, 'Einstein')">Einstein</button>
   <button class="tablinks" onclick="openArt(event, 'Marylin')">Marylin</button>
 </div>
+<div id="Kobe" class="art-preview tabcontent" data-initial="100" data-source="kobe" data-current_frame=0><span id="test"></div>
+<div id="Tennis" class="art-preview tabcontent" data-initial="100" data-source="tennis" data-current_frame=0></div>
+<div id="Pop" class="art-preview tabcontent" data-initial="100" data-source="pop" data-current_frame=0></div>
+<div id="Einstein" class="art-preview tabcontent" data-initial="100" data-source="einstein" data-current_frame=0></div>
+<div id="Marylin" class="art-preview tabcontent" data-initial=100 data-source="marylin" data-current_frame=0></div>
 
+<script type="text/javascript">
+  (function($) {
+	var imageArray ={};
+	$.fn.artPreview = function(options) {
+	  return this.each(function() {
+		var innerImageArray =[];
+		var elm = $(this);
+		elm.children().remove();
+		var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight-60); //Change size here
+		var frames = 200;
+		var abort_wiggle = false;
+		elm.data('used', false);
+		var i = 0;
+		var touchStartX=0;
+		var touchStartFrame=0;
 
+		elm.css('width', width);
+		elm.css('height', width);
+		elm.append('<div class="img-load"> <img src="loading2.gif"><div class="animated-progress"><span></span></div></div>');
+		$('.img-load').find('img').css('height', width/4);
+		$('.img-load').find('img').css('width', width/4);
+		
+		var img = $(' <img />', { 'src': ''}).hide().css({'cursor': 'pointer', 'pointer-events': 'none', 'height': width,}).appendTo(elm);
+		img.attr('unselectable', 'on');
+		img.css('user-select', 'none');
+		img.on('selectstart', false);
+		elm.attr('data-current_frame', elm.data('initial'));
 
-    <div id="Kobe" class="art-preview tabcontent" data-initial="100" data-source="kobe" data-current_frame=0><span id="test"></div>
-	<div id="Tennis" class="art-preview tabcontent" data-initial="100" data-source="tennis" data-current_frame=0></div>
-	<div id="Pop" class="art-preview tabcontent" data-initial="100" data-source="pop" data-current_frame=0></div>
-	<div id="Einstein" class="art-preview tabcontent" data-initial="100" data-source="einstein" data-current_frame=0></div>
-	<div id="Marylin" class="art-preview tabcontent" data-initial=100 data-source="marylin" data-current_frame=0></div>
+		function preloadImages(callback) {
+			console.log('Starting preloading.');
+			var img;
+			var remaining = frames;
+			for (var i = 0; i <= frames; i++) {
+				img = new Image();
+				img.onload = function() {
+					--remaining;
+					if (remaining < 0) {
+						imageArray[elm.attr('id')]=innerImageArray;
+						console.log("Got images, calling image loader");
+						callback();
+					}
+				};
 
-    <script type="text/javascript">
-      (function($) {
-        var imageArray ={};
-        $.fn.artPreview = function(options) {
-          return this.each(function() {
-          	var innerImageArray =[];
-            var elm = $(this);
-            elm.children("img").remove();
-            elm.children("div").remove();
-            var width = Math.min(.9 * window.innerWidth, .9 * window.innerHeight-60); //Change size here
-            var frames = 200;
-            var abort_wiggle = false;
-            elm.data('used', false);
-            var i = 0;
-            var touchStartX=0;
-            var touchStartFrame=0;
-
-            elm.css('width', width);
-            elm.css('height', width);
-            elm.append('<div class="img-load"> <img src="loading2.gif"><div class="progressbar"></div></div>');
-            $('.img-load').find('img').css('height', width/4);
-            $('.img-load').find('img').css('width', width/4);
-            
-		    var img = $(' <img />', { 'src': ''}).hide().css({'cursor': 'pointer', 'pointer-events': 'none', 'height': width,}).appendTo(elm);
-            img.attr('unselectable', 'on');
-            img.css('user-select', 'none');
-            img.on('selectstart', false);
-            elm.attr('data-current_frame', elm.data('initial'));
-
-			function preloadImages(callback) {
-				console.log('Starting preloading.');
-				var img;
-				var remaining = frames;
-				for (var i = 0; i <= frames; i++) {
-					img = new Image();
-					img.onload = function() {
-						--remaining;
-						if (remaining <= 0) {
-							imageArray[elm.attr('id')]=innerImageArray;
-							callback();
-						}
-					};
-						console.log( Math.round(100*(i/frames)));
-						$('#'+elm.attr('id')+' .progressbar' ).progressbar({value: Math.round(100*(i/frames)) });
-
-					img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
-					innerImageArray.push(img);
-				}
+				$(".animated-progress span").each(function () {
+				  if((100*(i/frames))%2==0){
+					  console.log(Math.round(100*(i/frames)));
+					  $(this).animate({width: Math.round(100*(i/frames)) + "%",},1);
+					}
+				});
+				img.src = elm.data('source') + '/' + elm.data('source') + '.' + i.toString() + '.jpg';
+				innerImageArray.push(img);
 			}
-            
-            function imagesLoader(){
-				if (imageArray[elm.attr('id')]){
-					console.log('Preloading complete.');
-					display_frame(elm.data('initial'));
-					elm.find('.img-load').stop(true).fadeOut(500, function() {
-						$(this).remove();
-					});
-					img.fadeIn(500);
-					setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle			
-				}else{
-					preloadImages(imagesLoader);
-				}
+		}
+		
+		function imagesLoader(){
+		    console.log("Calling Image Loader");
+			if (imageArray[elm.attr('id')]){
+				console.log('Preloading complete.');
+				display_frame(elm.data('initial'));
+				elm.find('.img-load').stop(true).fadeOut(50, function() {
+					$(this).remove();
+				});
+				img.fadeIn(50);
+				setTimeout(function(){wiggle();}, 1400); //Enable initial wiggle			
+			}else{
+				console.log("Calling Preloader");
+				preloadImages(imagesLoader);
+			}
 
-            }
-            imagesLoader();
-            
-            function display_frame(frame_no) {
-              if (frame_no <= 0) {
-                img.attr("src", imageArray[elm.attr('id')][0].src);
-              } else if (frame_no >= frames) {
-                img.attr("src", imageArray[elm.attr('id')][frames].src);
-              } else {
-                img.attr("src", imageArray[elm.attr('id')][frame_no].src);
-              }
-            }
+		}
+		console.log("Here we go");
+		imagesLoader();
+		
+		function display_frame(frame_no) {
+		  if (frame_no <= 0) {
+			img.attr("src", imageArray[elm.attr('id')][0].src);
+		  } else if (frame_no >= frames) {
+			img.attr("src", imageArray[elm.attr('id')][frames].src);
+		  } else {
+			img.attr("src", imageArray[elm.attr('id')][frame_no].src);
+		  }
+		}
 
-            function wiggle(e) {
-              console.log("Wiggle time.")
-              num_frames = 100; //Number of frames to wiggle
-              timing = 30; //Time between frames in ms.
-              pause_timer = 40; //Pauses at the end
-              wiggle_frame = 0;
-              current_frame = elm.attr('data-current_frame');
-              var wiggler = setTimeout(wiggle_change_frame, timing);
-              function wiggle_change_frame() {
-                if (abort_wiggle == false) {
-                  if (wiggle_frame <= num_frames) {
-                    current_frame = (elm.data('initial') - wiggle_frame);
-                    elm.attr('data-current_frame', current_frame);
-                    display_frame(current_frame);
-                  } else if (wiggle_frame < num_frames * 3 + pause_timer && wiggle_frame > num_frames + pause_timer) {
-                    current_frame = (elm.data('initial') - 2 * num_frames + wiggle_frame - pause_timer);
-                    elm.attr('data-current_frame', current_frame);
-                    display_frame(current_frame);
-                  } else if (wiggle_frame > num_frames * 3 + 2 * pause_timer) {
-                    current_frame = (elm.data('initial') + 4 * num_frames - wiggle_frame + 2 * pause_timer);
-                    elm.attr('data-current_frame', current_frame);
-                    display_frame(current_frame);
-                  }
-                }
-                wiggle_frame = wiggle_frame + 1;
-                if (wiggle_frame <= num_frames * 4 + 2 * pause_timer && abort_wiggle == false) {
-                  wiggler = setTimeout(wiggle_change_frame, timing);
-                }else{
-                wiggle_frame=0;
-                }
-              }
-            }
+		function wiggle(e) {
+		  console.log("Wiggle time.")
+		  num_frames = 100; //Number of frames to wiggle
+		  timing = 5; //Time between frames in ms.
+		  pause_timer = 40; //Pauses at the end
+		  wiggle_frame = 0;
+		  current_frame = elm.attr('data-current_frame');
+		  var wiggler = setTimeout(wiggle_change_frame, timing);
+		  function wiggle_change_frame() {
+		  	if (elm.is(':hidden')){return;};	//Bail out if item is hidden (aka switched tabs)
+			if (abort_wiggle == false) {
+			  if (wiggle_frame <= num_frames) {
+				current_frame = (elm.data('initial') - wiggle_frame);
+				elm.attr('data-current_frame', current_frame);
+				display_frame(current_frame);
+			  } else if (wiggle_frame < num_frames * 3 + pause_timer && wiggle_frame > num_frames + pause_timer) {
+				current_frame = (elm.data('initial') - 2 * num_frames + wiggle_frame - pause_timer);
+				elm.attr('data-current_frame', current_frame);
+				display_frame(current_frame);
+			  } else if (wiggle_frame > num_frames * 3 + 2 * pause_timer) {
+				current_frame = (elm.data('initial') + 4 * num_frames - wiggle_frame + 2 * pause_timer);
+				elm.attr('data-current_frame', current_frame);
+				display_frame(current_frame);
+			  }
+			}
+			wiggle_frame = wiggle_frame + 1;
+			if (wiggle_frame <= num_frames * 4 + 2 * pause_timer && abort_wiggle == false) {
+			  wiggler = setTimeout(wiggle_change_frame, timing);
+			}else{
+			wiggle_frame=0;
+			}
+		  }
+		}
 
-            function reset_initial(e) {
-              current_frame = elm.attr('data-current_frame');
-              final_frame = elm.data('initial');
-              timer_total = 500; //Reset timer
-              timer_interval = Math.round(timer_total/Math.abs(final_frame-current_frame));
-              var reset = setTimeout(change_frame, timer_interval);
-              function change_frame() {              
-                current_frame = parseInt(elm.attr('data-current_frame'));
-                display_frame(current_frame);
-                if ((current_frame != final_frame) && elm.data('used') == false) {
-                  if (final_frame > current_frame) {                     
-                    current_frame++;
-                  } else {
-                    current_frame--;
-                  }
-                  
-                  reset = setTimeout(change_frame, timer_interval);
-                }
-                elm.attr('data-current_frame', current_frame);
-              }
-            }
-            
-            elm.on("touchend", function(e) {
-              elm.data('used', false);
-              setTimeout(function(e) {
-                reset_initial(e);
-              }, 1500);
-            })
-            elm.on("touchcancel", function(e) {
-              elm.data('used', false);
-              setTimeout(function(e) {
-                reset_initial(e);
-              }, 1500);
-            })
-            elm.on("touchstart", function(e) {
-              abort_wiggle = true;
-              elm.data('used', true);
-              var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-	          touchStartX = touch.pageX;
-	          touchStartFrame = parseInt(elm.attr('data-current_frame'));
-            })
-            elm.mouseleave(function(e) {
-              elm.data('used', false);
-              setTimeout(function(e) {
-                reset_initial();
-              }, 1500);
-            })
-            elm.mouseenter(function(e) {
-              abort_wiggle = true;
-              elm.data('used', true);
-            })
-            elm.on("touchmove", function(e) {
-              e.preventDefault();
-              var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-              var location = touch.clientX-touchStartX;
-			  image_num=touchStartFrame-location;
-			  if (image_num < 0) {
-					image_num=0;
-				  } else if (image_num > frames) {
-					image_num=frames;
-				  }
-              elm.attr('data-current_frame', image_num);
-              display_frame(image_num);
-            })
-            
-            elm.mousemove(function(e) {
-              var location = e.clientX - elm.offset().left;
-              location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
-              image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
-              elm.attr('data-current_frame', image_num);
-              display_frame(image_num);
-            });
-          });
-        };
-      })(jQuery);
+		function reset_initial(e) {
+		  current_frame = elm.attr('data-current_frame');
+		  final_frame = elm.data('initial');
+		  timer_total = 500; //Reset timer
+		  timer_interval = Math.round(timer_total/Math.abs(final_frame-current_frame));
+		  var reset = setTimeout(change_frame, timer_interval);
+		  function change_frame() {
+			if (elm.is(':hidden')){return;};	//Bail out if item is hidden (aka switched tabs)
+			current_frame = parseInt(elm.attr('data-current_frame'));
+			display_frame(current_frame);
+			if ((current_frame != final_frame) && elm.data('used') == false) {
+			  if (final_frame > current_frame) {                     
+				current_frame++;
+			  } else {
+				current_frame--;
+			  }
+			  
+			  reset = setTimeout(change_frame, timer_interval);
+			}
+			elm.attr('data-current_frame', current_frame);
+		  }
+		}
+		
+		elm.on("touchend", function(e) {
+		  elm.data('used', false);
+		  setTimeout(function(e) {
+			reset_initial(e);
+		  }, 1500);
+		})
+		elm.on("touchcancel", function(e) {
+		  elm.data('used', false);
+		  setTimeout(function(e) {
+			reset_initial(e);
+		  }, 1500);
+		})
+		elm.on("touchstart", function(e) {
+		  abort_wiggle = true;
+		  elm.data('used', true);
+		  var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+		  touchStartX = touch.pageX;
+		  touchStartFrame = parseInt(elm.attr('data-current_frame'));
+		})
+		elm.mouseleave(function(e) {
+		  elm.data('used', false);
+		  setTimeout(function(e) {
+			reset_initial();
+		  }, 1500);
+		})
+		elm.mouseenter(function(e) {
+		  abort_wiggle = true;
+		  elm.data('used', true);
+		})
+		elm.on("touchmove", function(e) {
+		  e.preventDefault();
+		  var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+		  var location = touch.clientX-touchStartX;
+		  image_num=touchStartFrame-location;
+		  if (image_num < 0) {
+				image_num=0;
+			  } else if (image_num > frames) {
+				image_num=frames;
+			  }
+		  elm.attr('data-current_frame', image_num);
+		  display_frame(image_num);
+		})
+		
+		elm.mousemove(function(e) {
+		  var location = e.clientX - elm.offset().left;
+		  location = (location < 0 ? 0 : (location > elm.width() ? elm.width() : location));
+		  image_num = frames - 1 - Math.round(location / elm.width() * (frames - 1));
+		  elm.attr('data-current_frame', image_num);
+		  display_frame(image_num);
+		});
+	  });
+	};
+  })(jQuery);
 //       $('.art-preview').artPreview();  //Uncomment to go into standard mode if not using tabs
-      
+  
 //       TAB CONTENT JAVASCRIPT BELOW HERE
-	function openArt(evt, ArtName) {
-	  // Declare all variables
-	  var i, tabcontent, tablinks;
+function openArt(evt, ArtName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
 
-	  // Get all elements with class="tabcontent" and hide them
-	  tabcontent = document.getElementsByClassName("tabcontent");
-	  for (i = 0; i < tabcontent.length; i++) {
-		tabcontent[i].style.display = "none";
-	  }
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+	tabcontent[i].style.display = "none";
+  }
 
-	  // Get all elements with class="tablinks" and remove the class "active"
-	  tablinks = document.getElementsByClassName("tablinks");
-	  for (i = 0; i < tablinks.length; i++) {
-		tablinks[i].className = tablinks[i].className.replace(" active", "");
-	  }
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+	tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
 
-	  // Show the current tab, and add an "active" class to the button that opened the tab
-	  document.getElementById(ArtName).style.display = "block";
-	  evt.currentTarget.className += " active";
-	  $('#'+ArtName).artPreview();
-	  }
-      document.getElementById("defaultOpen").click();
-    </script>
-  </body>
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(ArtName).style.display = "block";
+  evt.currentTarget.className += " active";
+  $('#'+ArtName).artPreview();
+  }
+  document.getElementById("defaultOpen").click();
+</script>
+</body>
 </html>
